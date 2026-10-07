@@ -30,7 +30,55 @@ const seedAll = require("./seedData.js");
 // Setup
 dotenv.config();
 const app = express();
-app.use(cors());
+
+const allowedOrigins = [
+  "https://remap123.netlify.app",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:5000"
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow non-browser requests (mobile, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const cleanOrigin = origin.replace(/\/+$/, "");
+    if (
+      allowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith(".netlify.app") ||
+      cleanOrigin.endsWith(".onrender.com") ||
+      cleanOrigin.includes("localhost")
+    ) {
+      return callback(null, true);
+    }
+    // Fallback: allow origin
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"]
+};
+app.use(cors(corsOptions));
+
+// Explicit preflight and CORS header fallback for proxies and cloud environments
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+  } else {
+    res.header("Access-Control-Allow-Origin", "https://remap123.netlify.app");
+  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use("/uploads", express.static("uploads")); // serve uploaded files
 
