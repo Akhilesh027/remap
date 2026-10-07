@@ -25,6 +25,7 @@ const Message = require("./models/Message.js");
 const DepartmentMessage = require("./models/DepartmentMessage.js");
 const Plots = require("./models/Plots.js");
 const Leave = require("./models/Leave.js");
+const Client = require("./models/Client.js");
 const seedAll = require("./seedData.js");
 
 // Setup
@@ -177,9 +178,15 @@ app.post("/api/login", async (req, res) => {
     );
 
     let clientId = undefined;
-    const clientDoc = await Client.findOne({ email: user.email });
-    if (clientDoc) {
-      clientId = clientDoc._id;
+    try {
+      if (Client) {
+        const clientDoc = await Client.findOne({ email: user.email });
+        if (clientDoc) {
+          clientId = clientDoc._id;
+        }
+      }
+    } catch (e) {
+      console.warn("Client lookup warning during login:", e.message);
     }
 
     res
