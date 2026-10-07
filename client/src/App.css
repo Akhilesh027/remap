@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Include all the custom styles from the original HTML */
+/* ... (same as provided in the original style tag) */
